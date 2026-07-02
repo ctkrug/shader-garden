@@ -44,7 +44,10 @@ function renderColorControl(
   handlers: ControlsHandlers,
   override?: number[],
 ): HTMLElement {
-  const defaultHex = override ? rgbToHex(override) : decl.meta.default ?? "#ffffff";
+  // Round-trip through hexToRgb even for the meta default so a malformed
+  // hand-written `default:` comment shows the same sanitized swatch/readout
+  // it actually renders with, instead of displaying raw invalid text.
+  const defaultHex = override ? rgbToHex(override) : rgbToHex(hexToRgb(decl.meta.default ?? "#ffffff"));
 
   const field = document.createElement("div");
   field.className = "control";
