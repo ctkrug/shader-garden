@@ -5,6 +5,11 @@ export interface ForkedPreset extends Preset {
   readonly forkedFrom: string;
 }
 
+/** Narrows a `Preset` to a `ForkedPreset` — used to decide whether the source editor applies. */
+export function isForkedPreset(preset: Preset): preset is ForkedPreset {
+  return "forkedFrom" in preset;
+}
+
 let forkCounter = 0;
 
 /**
