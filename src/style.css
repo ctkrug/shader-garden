@@ -195,6 +195,8 @@ a {
   background: var(--surface-1);
   border-top: 1px solid var(--grid-line);
   overflow-x: auto;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
 }
 
 .preset-card {
@@ -206,6 +208,7 @@ a {
   border: 1px solid var(--grid-line);
   border-radius: var(--radius);
   min-width: 140px;
+  scroll-snap-align: start;
   transition: border-color 150ms var(--ease-out), box-shadow 150ms var(--ease-out);
 }
 
