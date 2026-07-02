@@ -3,7 +3,7 @@
  * with a trailing NUL byte, which renders as a tofu glyph when the raw log
  * is dropped straight into the DOM (see the editor's inline error panel).
  */
-function cleanInfoLog(log: string | null): string | null {
+export function cleanInfoLog(log: string | null): string | null {
   return log?.replace(/\0+$/, "").trim() ?? null;
 }
 
