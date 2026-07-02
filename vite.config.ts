@@ -6,6 +6,11 @@ export default defineConfig({
   base: "./",
   build: {
     outDir: "dist",
+    // The CodeMirror editor bundle (~500kB) is the only chunk near the
+    // default 500kB warning threshold, and it's already behind main.ts's
+    // dynamic import() — it never blocks the initial paint, so the warning
+    // is a false positive here rather than a real perf issue to split further.
+    chunkSizeWarningLimit: 600,
   },
   test: {
     environment: "node",
