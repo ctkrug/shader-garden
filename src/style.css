@@ -30,6 +30,27 @@
 
 * {
   box-sizing: border-box;
+  scrollbar-color: var(--text-muted) var(--surface-1);
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--surface-1);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: var(--radius);
+  border: 2px solid var(--surface-1);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
 }
 
 html,
