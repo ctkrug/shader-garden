@@ -191,6 +191,7 @@ a {
 .stage-error {
   position: absolute;
   inset: auto var(--space-4) var(--space-4) var(--space-4);
+  z-index: 3;
   background: var(--surface-2);
   border: 1px solid var(--danger);
   border-radius: var(--radius);
