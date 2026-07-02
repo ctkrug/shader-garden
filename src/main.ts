@@ -6,6 +6,7 @@ import { PRESETS, getPreset } from "./presets/registry";
 import { CustomPresetStore } from "./presets/customStore";
 import { isForkedPreset, type ForkedPreset } from "./presets/fork";
 import { renderGallery } from "./ui/gallery";
+import { renderThumbnail } from "./presets/thumbnail";
 import { renderControls, type ControlValues } from "./ui/controls";
 import { renderExportPanel } from "./ui/exportPanel";
 import { crossfadeOut } from "./ui/crossfade";
@@ -68,6 +69,13 @@ const { gl, resize } = createGLContext(canvas);
 const renderer = new ShaderRenderer(gl, vertexSource, PRESETS[0].fragmentSource);
 const tick = new TickPlayer();
 const customPresets = new CustomPresetStore();
+
+/** One off-screen render per gallery preset, up front — cheap relative to a compile, and keeps loadPreset() free of GL work unrelated to the active shader. */
+const presetThumbnails = new Map(
+  PRESETS.map((preset) => [preset.id, renderThumbnail(vertexSource, preset.fragmentSource)] as const).filter(
+    (entry): entry is [string, string] => entry[1] !== null,
+  ),
+);
 
 let activePresetId = PRESETS[0].id;
 const uniformValues = new Map<string, UniformValue>();
@@ -192,6 +200,7 @@ function loadPreset(
     activePresetId,
     { onSelect: swapPreset, onFork: forkAndSwitch },
     customPresets.all,
+    presetThumbnails,
   );
   tick.tick(880);
   refreshEditorPanel();
