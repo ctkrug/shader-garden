@@ -35,4 +35,20 @@ describe("CustomPresetStore", () => {
 
     expect(PRESETS.length).toBe(originalLength);
   });
+
+  describe("updateSource", () => {
+    it("overwrites a fork's fragmentSource in place", () => {
+      const store = new CustomPresetStore();
+      const forked = store.fork(PRESETS[0]);
+
+      store.updateSource(forked.id, "void main() {}");
+
+      expect(store.get(forked.id)?.fragmentSource).toBe("void main() {}");
+    });
+
+    it("is a no-op for an unknown id", () => {
+      const store = new CustomPresetStore();
+      expect(() => store.updateSource("nope", "void main() {}")).not.toThrow();
+    });
+  });
 });
