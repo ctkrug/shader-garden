@@ -7,7 +7,9 @@ import { CustomPresetStore } from "./presets/customStore";
 import { isForkedPreset, type ForkedPreset } from "./presets/fork";
 import { renderGallery } from "./ui/gallery";
 import { renderControls, type ControlValues } from "./ui/controls";
+import { renderExportPanel } from "./ui/exportPanel";
 import { crossfadeOut } from "./ui/crossfade";
+import { exportGif } from "./export/gifExporter";
 import { TickPlayer } from "./audio/tick";
 import type { ShaderEditor } from "./editor/shaderEditor";
 import { debounce } from "./editor/debounce";
@@ -40,7 +42,10 @@ app.innerHTML = `
     </main>
     <footer class="control-dock is-collapsed" aria-label="Uniform controls">
       <button class="control-dock-handle" type="button" aria-label="Toggle uniform controls" aria-expanded="false"></button>
-      <div class="control-dock-body"></div>
+      <div class="control-dock-body">
+        <div class="uniform-controls"></div>
+        <div class="export-panel" aria-label="Export as GIF"></div>
+      </div>
     </footer>
   </div>
 `;
@@ -48,7 +53,8 @@ app.innerHTML = `
 const stageEl = app.querySelector(".stage") as HTMLElement;
 const canvas = app.querySelector("canvas") as HTMLCanvasElement;
 const galleryEl = app.querySelector(".gallery-rail") as HTMLElement;
-const controlsEl = app.querySelector(".control-dock-body") as HTMLElement;
+const controlsEl = app.querySelector(".uniform-controls") as HTMLElement;
+const exportPanelEl = app.querySelector(".export-panel") as HTMLElement;
 const controlDockEl = app.querySelector(".control-dock") as HTMLElement;
 const controlDockHandle = app.querySelector(".control-dock-handle") as HTMLButtonElement;
 const errorEl = app.querySelector(".stage-error") as HTMLElement;
@@ -284,9 +290,29 @@ if (restored) {
   loadPreset(activePresetId);
 }
 
+let currentTimeSeconds = 0;
+
 const frameLoop = new FrameLoop((timeMs) => {
   resize();
-  renderer.render(timeMs / 1000, [canvas.width, canvas.height], mouse, uniformValues);
+  currentTimeSeconds = timeMs / 1000;
+  renderer.render(currentTimeSeconds, [canvas.width, canvas.height], mouse, uniformValues);
+});
+
+renderExportPanel(exportPanelEl, {
+  onExport: (request, onProgress) => {
+    const preset = getActivePreset();
+    if (!preset) return Promise.reject(new Error("no active preset to export"));
+
+    return exportGif({
+      vertexSource,
+      fragmentSource: preset.fragmentSource,
+      uniformValues,
+      mouse,
+      startTimeSeconds: currentTimeSeconds,
+      ...request,
+      onProgress,
+    });
+  },
 });
 
 frameLoop.start();
