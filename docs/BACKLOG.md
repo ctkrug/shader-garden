@@ -17,12 +17,12 @@ edges before the gallery and editor lean on it harder.
 
 ## Epic 2: Preset gallery
 
-- [ ] Add three more presets (ray-march tunnel, wave interference, kaleidoscope) so the gallery
+- [x] Add three more presets (ray-march tunnel, wave interference, kaleidoscope) so the gallery
       spans a wider range of GLSL techniques than the three shipped in scaffold
 - [ ] Render a small live or cached-frame thumbnail per gallery card instead of text-only cards
-- [ ] "Fork" action: duplicate a preset's source into an editable custom slot without mutating
+- [x] "Fork" action: duplicate a preset's source into an editable custom slot without mutating
       the original preset (original stays the reset target)
-- [ ] Design polish: filmstrip touch/swipe on mobile, active-card glow state matches
+- [x] Design polish: filmstrip touch/swipe on mobile, active-card glow state matches
       `docs/DESIGN.md` tokens
 
 ## Epic 3: Live editing & hot reload
