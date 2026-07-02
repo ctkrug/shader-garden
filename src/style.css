@@ -617,6 +617,11 @@ a {
   background: var(--success);
 }
 
+.export-button.error {
+  background: var(--danger);
+  color: #1a0000;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .wordmark {
     animation: none;
