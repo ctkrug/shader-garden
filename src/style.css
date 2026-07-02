@@ -200,42 +200,84 @@ a {
 .preset-card {
   flex: 0 0 auto;
   display: flex;
-  flex-direction: column;
+  align-items: stretch;
   gap: var(--space-1);
   background: var(--surface-2);
   border: 1px solid var(--grid-line);
   border-radius: var(--radius);
-  padding: var(--space-2) var(--space-3);
   min-width: 140px;
-  min-height: 44px;
-  cursor: pointer;
-  text-align: left;
   transition: border-color 150ms var(--ease-out), box-shadow 150ms var(--ease-out);
 }
 
-.preset-card:hover {
-  border-color: var(--accent);
-}
-
-.preset-card:active {
-  transform: translateY(1px);
-}
-
-.preset-card[aria-pressed="true"] {
+.preset-card:has(.preset-card-select[aria-pressed="true"]) {
   border-color: var(--accent);
   box-shadow: var(--glow);
 }
 
-.preset-card .name {
+.preset-card:has(.preset-card-select:hover) {
+  border-color: var(--accent);
+}
+
+.preset-card-select {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  background: none;
+  border: none;
+  padding: var(--space-2) var(--space-3);
+  min-height: 44px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.preset-card-select:active {
+  transform: translateY(1px);
+}
+
+.preset-card-select .name {
   font-family: var(--font-display);
   font-weight: 500;
   font-size: 14px;
   color: var(--text);
 }
 
-.preset-card .description {
+.preset-card-select .description {
   font-size: 12px;
   color: var(--text-muted);
+}
+
+.preset-card-fork {
+  flex: 0 0 auto;
+  align-self: center;
+  width: 32px;
+  height: 32px;
+  margin-right: var(--space-2);
+  background: var(--surface-1);
+  border: 1px solid var(--grid-line);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 150ms var(--ease-out), color 150ms var(--ease-out);
+}
+
+.preset-card-fork:hover {
+  border-color: var(--accent-support);
+  color: var(--accent-support);
+}
+
+.preset-card-fork:active {
+  transform: translateY(1px);
+}
+
+.gallery-divider {
+  flex: 0 0 auto;
+  padding: var(--space-2) var(--space-3) 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .control-dock {
