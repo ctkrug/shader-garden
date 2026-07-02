@@ -493,19 +493,45 @@ a {
   color: var(--accent);
 }
 
+/* The track renders 4px thin (the blueprint hairline look), but the input
+   itself stays 44px tall so the draggable hit area meets the touch target
+   minimum — a 4px-tall element would be nearly impossible to grab on a
+   phone even though the visible thumb looks big enough. */
 .control input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
+  height: 44px;
+  background: transparent;
+  outline-offset: 4px;
+}
+
+.control input[type="range"]::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 2px;
   background: var(--grid-line);
-  outline-offset: 4px;
+}
+
+.control input[type="range"]::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--grid-line);
 }
 
 .control input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 16px;
   height: 16px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  transition: transform 100ms var(--ease-out);
+}
+
+.control input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: none;
   border-radius: 50%;
   background: var(--accent);
   cursor: pointer;
@@ -513,6 +539,10 @@ a {
 }
 
 .control input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(0.85);
+}
+
+.control input[type="range"]:active::-moz-range-thumb {
   transform: scale(0.85);
 }
 
