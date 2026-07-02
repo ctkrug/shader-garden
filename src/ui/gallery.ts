@@ -49,6 +49,10 @@ function buildCard(
   select.type = "button";
   select.className = "preset-card-select";
   select.setAttribute("aria-pressed", String(preset.id === activeId));
+  // The desktop rail visually collapses to icon-only cards (docs/DESIGN.md),
+  // hiding .preset-card-label — aria-label keeps the accessible name intact
+  // there even though it duplicates the (visible-on-mobile) label text.
+  select.setAttribute("aria-label", preset.name);
   select.title = `${preset.name} — ${preset.description}`;
 
   if (thumbnail) {
