@@ -1,3 +1,5 @@
+import { resolveDevicePixelRatio } from "./dpr";
+
 export interface GLContext {
   gl: WebGL2RenderingContext;
   canvas: HTMLCanvasElement;
@@ -22,7 +24,7 @@ export function createGLContext(canvas: HTMLCanvasElement): GLContext {
   }
 
   const resize = (): boolean => {
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = resolveDevicePixelRatio(window.devicePixelRatio || 1);
     const displayWidth = Math.round(canvas.clientWidth * dpr);
     const displayHeight = Math.round(canvas.clientHeight * dpr);
 
