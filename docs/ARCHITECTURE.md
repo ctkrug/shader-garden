@@ -189,7 +189,10 @@ export panel request (src/ui/exportPanel.ts)
   once at startup, and hands `exportGif()` the active preset's source,
   current uniform values, and the live render's current shader-clock time
   (so an export continues from what's on screen instead of restarting at
-  t=0).
+  t=0). `restoreCustomPreset()` re-forks a persisted fork on load and also
+  reopens the editor panel — the only way a persisted fork exists is that
+  the user had it open, so "picks up where you left off" includes the
+  panel, not just the render.
 
 ## Testing approach
 
