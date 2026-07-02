@@ -16,6 +16,18 @@ describe("hexToRgb", () => {
     expect(g).toBeCloseTo(0x9d / 255, 5);
     expect(b).toBeCloseTo(0x5c / 255, 5);
   });
+
+  it("falls back to 0 for a channel that isn't valid hex, instead of NaN", () => {
+    expect(hexToRgb("#zzzzzz")).toEqual([0, 0, 0]);
+  });
+
+  it("falls back to 0 per-channel for a partially malformed value", () => {
+    expect(hexToRgb("#ffzz00")).toEqual([1, 0, 0]);
+  });
+
+  it("falls back to 0 for a too-short hex string", () => {
+    expect(hexToRgb("#ff")).toEqual([1, 0, 0]);
+  });
 });
 
 describe("rgbToHex", () => {
