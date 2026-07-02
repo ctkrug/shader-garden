@@ -82,10 +82,25 @@ export panel request (src/ui/exportPanel.ts)
     original gallery entry. `updateSource()` overwrites a fork's source in
     place — the editor's hot-recompile path commits edits here rather than
     holding a second, divergent copy of the text.
+  - `defaultUniforms.ts` — `defaultUniformValues()`, the same min/default
+    rules `controls.ts` applies when first building a control, as a pure
+    function — lets a one-off render (a gallery thumbnail) get a
+    representative frame without building any DOM.
+  - `thumbnail.ts` — `renderThumbnail()` compiles a preset on a detached
+    96×96 WebGL2 canvas at a representative mid-loop timestamp and returns
+    a data URL, or `null` on any failure (a broken preset thumbnail just
+    falls back to the card's plain background). Not unit-tested — needs a
+    real WebGL2 context, same as `gifExporter.ts`.
 - **`src/ui/`** — DOM rendering, no framework.
   - `gallery.ts` — renders the preset rail: one card per `PRESETS` entry (with
-    a fork button), then a "Custom" section for anything in the
-    `CustomPresetStore`.
+    a fork button and, once `main.ts` has rendered one via `thumbnail.ts`, a
+    thumbnail image), then a "Custom" section for anything in the
+    `CustomPresetStore` (forks don't get thumbnails — their source changes
+    on every edit, so a cached frame would go stale immediately). The
+    desktop rail is CSS-collapsed to a 64px icon strip on top of this: the
+    name/description move to a visually-hidden label plus the button's
+    `aria-label`, and the fork button becomes a corner badge shown on
+    hover/focus-within.
   - `controls.ts` — renders the uniform control panel from `UniformDecl[]`;
     a `vec3` with a `color` meta flag becomes a color input, `float`/`int`
     become range sliders. Anything else is skipped rather than guessed at.
@@ -163,28 +178,30 @@ export panel request (src/ui/exportPanel.ts)
   its own in-progress/success/failure button states.
 - **`src/main.ts`** — wires all of the above into the app shell: builds the
   DOM skeleton, owns the active-preset/uniform-values state, opens/closes
-  the editor panel, drives the `FrameLoop`, and hands `exportGif()` the
-  active preset's source, current uniform values, and the live render's
-  current shader-clock time (so an export continues from what's on screen
-  instead of restarting at t=0).
+  the editor panel, drives the `FrameLoop`, renders every gallery thumbnail
+  once at startup, and hands `exportGif()` the active preset's source,
+  current uniform values, and the live render's current shader-clock time
+  (so an export continues from what's on screen instead of restarting at
+  t=0).
 
 ## Testing approach
 
-`tests/` covers pure logic only (uniform parsing, DPR clamp, fork/store
-isolation, frame-loop scheduling with injected fakes, color conversion, mute
-persistence, edit-recompile debouncing, custom-state save/load, GIF frame
-timing, median-cut quantization, LZW encoding, and full GIF89a byte-stream
-assembly) — see `vite.config.ts`'s `test.environment: "node"`. The LZW and
-GIF encoder tests round-trip their output through a hand-written decoder/
-parser in the test file itself — the strongest correctness check available
-without an external reference GIF. DOM-heavy modules (`gallery.ts`,
-`controls.ts`, `crossfade.ts`, `shaderEditor.ts`, `exportPanel.ts`) and the
-WebGL-dependent `gifExporter.ts` are intentionally left untested at the unit
-level: this environment's Node version predates what the current `jsdom`
-requires (confirmed by trying it — `ERR_REQUIRE_ESM` from a transitive dep),
-so DOM/WebGL assertions aren't practical here. Verify UI changes by running
-`npm run dev` and checking in a real/headless browser instead (a Playwright
-+ Chromium install is available in this environment for that).
+`tests/` covers pure logic only (uniform parsing, default-uniform resolution,
+DPR clamp, fork/store isolation, frame-loop scheduling with injected fakes,
+color conversion, mute persistence, edit-recompile debouncing, custom-state
+save/load, GIF frame timing, median-cut quantization, LZW encoding, and full
+GIF89a byte-stream assembly) — see `vite.config.ts`'s `test.environment:
+"node"`. The LZW and GIF encoder tests round-trip their output through a
+hand-written decoder/parser in the test file itself — the strongest
+correctness check available without an external reference GIF. DOM-heavy
+modules (`gallery.ts`, `controls.ts`, `crossfade.ts`, `shaderEditor.ts`,
+`exportPanel.ts`) and the WebGL-dependent `gifExporter.ts`/`thumbnail.ts`
+are intentionally left untested at the unit level: this environment's Node
+version predates what the current `jsdom` requires (confirmed by trying it
+— `ERR_REQUIRE_ESM` from a transitive dep), so DOM/WebGL assertions aren't
+practical here. Verify UI changes by running `npm run dev` and checking in
+a real/headless browser instead (a Playwright + Chromium install is
+available in this environment for that).
 
 ## Build & deploy
 
