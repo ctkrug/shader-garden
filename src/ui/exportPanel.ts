@@ -92,7 +92,7 @@ export function renderExportPanel(container: HTMLElement, handlers: ExportPanelH
     };
 
     if (successTimer) clearTimeout(successTimer);
-    button.classList.remove("success");
+    button.classList.remove("success", "error");
     button.disabled = true;
     button.textContent = "Exporting…";
     downloadLink.hidden = true;
@@ -120,8 +120,10 @@ export function renderExportPanel(container: HTMLElement, handlers: ExportPanelH
       }, 2000);
     } catch {
       button.textContent = "Export failed";
+      button.classList.add("error");
       successTimer = setTimeout(() => {
         button.textContent = "Export GIF";
+        button.classList.remove("error");
       }, 2000);
     } finally {
       button.disabled = false;
