@@ -27,13 +27,13 @@ edges before the gallery and editor lean on it harder.
 
 ## Epic 3: Live editing & hot reload
 
-- [ ] Integrate an in-browser code editor (CodeMirror) for the forked shader's fragment source
-- [ ] Debounce recompilation on keystroke; surface `ShaderCompileError`/`ProgramLinkError`
+- [x] Integrate an in-browser code editor (CodeMirror) for the forked shader's fragment source
+- [x] Debounce recompilation on keystroke; surface `ShaderCompileError`/`ProgramLinkError`
       inline without blanking the last good frame (renderer already supports this — wire the
       editor to it)
-- [ ] Persist the active custom shader source and its uniform values to `localStorage` so a
+- [x] Persist the active custom shader source and its uniform values to `localStorage` so a
       reload doesn't lose in-progress work
-- [ ] Design polish: bottom-sheet control dock collapse/expand on mobile, error-state pulse
+- [x] Design polish: bottom-sheet control dock collapse/expand on mobile, error-state pulse
       per `docs/DESIGN.md`
 
 ## Epic 4: GIF export
