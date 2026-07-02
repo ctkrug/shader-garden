@@ -40,6 +40,21 @@ meta default. A failed recompile throws before the old program is touched
 (`ShaderRenderer.recompile()`), so the last-good frame keeps rendering while
 the error surfaces inline.
 
+GIF export is a parallel pipeline off the same `ShaderRenderer` class, driven
+independently of the live `FrameLoop`:
+
+```
+export panel request (src/ui/exportPanel.ts)
+  -> exportGif() renders the active fragment source on a detached WebGL2
+     canvas at fixed timestamps (src/export/frameTiming.ts), reading back
+     each frame with gl.readPixels (src/export/gifExporter.ts)
+  -> buildHistogram() + quantize() build one shared 256-color palette across
+     every captured frame via median-cut (src/gif/quantize.ts)
+  -> quantizeFrame() maps each frame's pixels to palette indices
+  -> encodeGif() LZW-encodes each frame (src/gif/lzw.ts) and assembles a
+     complete GIF89a byte stream (src/gif/encoder.ts) -> Blob -> download link
+```
+
 ## Modules
 
 - **`src/gl/`** — the hand-rolled WebGL2 pipeline, no scene-graph library.
@@ -93,6 +108,40 @@ the error surfaces inline.
   - `debounce.ts` — generic `debounce()` with injectable timer functions
     (same DI pattern as `FrameLoop`). Used both for edit-triggered
     recompiles (400ms) and edit-triggered persistence writes (300ms).
+- **`src/gif/`** — a from-scratch GIF89a encoder, no dependency, in keeping
+  with the "hand-rolled, no scene-graph library" philosophy for the WebGL
+  pipeline above.
+  - `quantize.ts` — `buildHistogram()` counts every distinct RGB color across
+    all captured frames; `quantize()` is median-cut color quantization that
+    recursively splits the widest-range bucket at its weighted median until
+    a target palette size is reached, tagging every source color with its
+    bucket's index as it goes. That gives `QuantizedPalette.indexOf()` an
+    exact O(1) lookup for any color that was actually captured — brute-force
+    nearest-color search (`nearestColorIndex()`) is only a defensive
+    fallback. `quantizeFrame()` maps a pixel buffer to palette indices.
+  - `lzw.ts` — `lzwEncode()`, GIF's variable-width LZW variant (12-bit max
+    code, in-stream dictionary reset at 4096 entries). The code-size growth
+    check intentionally fires one code later than textbook LZW — see the
+    inline comment — because a decoder can only build its matching
+    dictionary entry one code after the encoder does.
+  - `encoder.ts` — `encodeGif()` assembles the full byte stream: header,
+    global color table (padded to a power of two), an optional NETSCAPE2.0
+    loop extension, and a graphic control extension + image descriptor +
+    LZW sub-blocks per frame.
+- **`src/export/`** — the capture/orchestration layer between the renderer
+  and the GIF encoder.
+  - `frameTiming.ts` — `computeFrameTimestamps()`, fixed-cadence capture
+    timestamps at a target fps, independent of whatever rate the live
+    `FrameLoop` happens to be painting at.
+  - `gifExporter.ts` — `exportGif()` renders the requested fragment source
+    on a fresh, detached `<canvas>`/WebGL2 context sized to the export
+    resolution, looping over `computeFrameTimestamps()` and reading back
+    each frame with `gl.readPixels` (flipped vertically — GL's origin is
+    bottom-left, GIF rows are top-left-first). Yields to the event loop
+    every few frames so a multi-second capture doesn't freeze the UI, then
+    quantizes and encodes the result into a `Blob`. Not unit-tested (needs
+    a real WebGL2 context) — verify by running the export panel in a
+    browser.
 - **`src/persistence/customState.ts`** — `saveCustomState()`/
   `loadCustomState()`/`clearCustomState()`, best-effort `localStorage`
   persistence (one entry: the most-recently-edited fork's source + uniform
@@ -108,23 +157,34 @@ the error surfaces inline.
 - **`src/audio/tick.ts`** — `TickPlayer`, a single WebAudio-synthesized UI
   blip (no audio files) with a `localStorage`-persisted mute flag. Every
   method no-ops without an `AudioContext` (tests, older browsers).
+- **`src/ui/exportPanel.ts`** — `renderExportPanel()`, the size/duration/fps
+  controls + export button + progress bar + download link. Rendered once
+  (unlike `controls.ts`, it doesn't get rebuilt per preset swap) and owns
+  its own in-progress/success/failure button states.
 - **`src/main.ts`** — wires all of the above into the app shell: builds the
   DOM skeleton, owns the active-preset/uniform-values state, opens/closes
-  the editor panel, and drives the `FrameLoop`.
+  the editor panel, drives the `FrameLoop`, and hands `exportGif()` the
+  active preset's source, current uniform values, and the live render's
+  current shader-clock time (so an export continues from what's on screen
+  instead of restarting at t=0).
 
 ## Testing approach
 
 `tests/` covers pure logic only (uniform parsing, DPR clamp, fork/store
 isolation, frame-loop scheduling with injected fakes, color conversion, mute
-persistence, edit-recompile debouncing, custom-state save/load) — see
-`vite.config.ts`'s `test.environment: "node"`. DOM-heavy modules
-(`gallery.ts`, `controls.ts`, `crossfade.ts`, `shaderEditor.ts`) are
-intentionally left untested at the unit level: this environment's Node
-version predates what the current `jsdom` requires (confirmed by trying it —
-`ERR_REQUIRE_ESM` from a transitive dep), so DOM assertions aren't practical
-here. Verify UI changes by running `npm run dev` and checking in a
-real/headless browser instead (a Playwright + Chromium install is available
-in this environment for that).
+persistence, edit-recompile debouncing, custom-state save/load, GIF frame
+timing, median-cut quantization, LZW encoding, and full GIF89a byte-stream
+assembly) — see `vite.config.ts`'s `test.environment: "node"`. The LZW and
+GIF encoder tests round-trip their output through a hand-written decoder/
+parser in the test file itself — the strongest correctness check available
+without an external reference GIF. DOM-heavy modules (`gallery.ts`,
+`controls.ts`, `crossfade.ts`, `shaderEditor.ts`, `exportPanel.ts`) and the
+WebGL-dependent `gifExporter.ts` are intentionally left untested at the unit
+level: this environment's Node version predates what the current `jsdom`
+requires (confirmed by trying it — `ERR_REQUIRE_ESM` from a transitive dep),
+so DOM/WebGL assertions aren't practical here. Verify UI changes by running
+`npm run dev` and checking in a real/headless browser instead (a Playwright
++ Chromium install is available in this environment for that).
 
 ## Build & deploy
 
