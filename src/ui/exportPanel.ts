@@ -112,9 +112,12 @@ export function renderExportPanel(container: HTMLElement, handlers: ExportPanelH
       downloadLink.href = lastObjectUrl;
       downloadLink.hidden = false;
 
-      button.textContent = "Export GIF";
+      button.textContent = "✓ Exported";
       button.classList.add("success");
-      successTimer = setTimeout(() => button.classList.remove("success"), 2000);
+      successTimer = setTimeout(() => {
+        button.textContent = "Export GIF";
+        button.classList.remove("success");
+      }, 2000);
     } catch {
       button.textContent = "Export failed";
       successTimer = setTimeout(() => {
