@@ -9,7 +9,7 @@ import { renderGallery } from "./ui/gallery";
 import { renderControls, type ControlValues } from "./ui/controls";
 import { crossfadeOut } from "./ui/crossfade";
 import { TickPlayer } from "./audio/tick";
-import { ShaderEditor } from "./editor/shaderEditor";
+import type { ShaderEditor } from "./editor/shaderEditor";
 import { debounce } from "./editor/debounce";
 import { loadCustomState, saveCustomState } from "./persistence/customState";
 import vertexSource from "./shaders/fullscreen.vert.glsl?raw";
@@ -92,8 +92,10 @@ function captureFrameSnapshot(): string | null {
   }
 }
 
-function ensureEditor(source: string): ShaderEditor {
+/** CodeMirror is a sizeable bundle — deferred behind a dynamic import so the canvas (the hero) never waits on it. */
+async function ensureEditor(source: string): Promise<ShaderEditor> {
   if (!editor) {
+    const { ShaderEditor } = await import("./editor/shaderEditor");
     editor = new ShaderEditor(editorPanelBodyEl, source, {
       onChange: (nextSource) => debouncedApplyEdit(nextSource),
     });
@@ -103,11 +105,11 @@ function ensureEditor(source: string): ShaderEditor {
   return editor;
 }
 
-function openEditor(): void {
+async function openEditor(): Promise<void> {
   const preset = getActivePreset();
   if (!preset || !isForkedPreset(preset)) return;
 
-  ensureEditor(preset.fragmentSource);
+  await ensureEditor(preset.fragmentSource);
   editorOpen = true;
   editorPanelEl.dataset.open = "true";
   editorToggleButton.setAttribute("aria-pressed", "true");
@@ -132,7 +134,7 @@ function refreshEditorPanel(): void {
     return;
   }
 
-  if (editorOpen && preset) ensureEditor(preset.fragmentSource);
+  if (editorOpen && preset) void ensureEditor(preset.fragmentSource);
 }
 
 function handleUniformChange(name: string, type: UniformType, value: number[]): void {
@@ -233,7 +235,7 @@ function forkAndSwitch(sourceId: string): void {
 
   const forked = customPresets.fork(source);
   loadPreset(forked.id, { crossfade: true });
-  openEditor();
+  void openEditor();
 }
 
 /** Recreates the most-recently-edited fork from localStorage, if any, so a reload doesn't lose in-progress work. */
@@ -257,7 +259,7 @@ muteButton.addEventListener("click", () => {
 
 editorToggleButton.addEventListener("click", () => {
   if (editorOpen) closeEditor();
-  else openEditor();
+  else void openEditor();
 });
 
 editorCloseButton.addEventListener("click", closeEditor);
