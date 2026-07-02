@@ -13,8 +13,12 @@ into live controls automatically, and lets you walk away with a shareable artifa
 
 ## What it does
 
-- **Gallery of presets** — a handful of hand-written generative-art shaders (plasma,
-  flow fields, voronoi cells, kaleidoscopic ray marching) to fork and remix.
+- **Gallery of presets** — six hand-written generative-art shaders (plasma, flow
+  fields, voronoi cells, a ray-marched tunnel, wave interference, kaleidoscope)
+  to fork and remix.
+- **Fork, don't destroy** — forking a preset copies its source into an editable
+  custom slot; the original gallery entry never mutates, so it's always the
+  reset target.
 - **Hot-reloading uniforms** — edit a shader's source and its `uniform` controls
   (sliders, color pickers) regenerate automatically from the GLSL declarations.
 - **Real-time preview** — a fullscreen WebGL2 canvas rendered at device pixel ratio,
@@ -33,8 +37,10 @@ into live controls automatically, and lets you walk away with a shareable artifa
 
 ## Status
 
-Early scaffold — see [`docs/VISION.md`](docs/VISION.md) for the full plan and
-[`docs/BACKLOG.md`](docs/BACKLOG.md) for the build breakdown.
+Core rendering pipeline, gallery, and forking are in place; live in-browser
+editing and GIF export are next. See [`docs/VISION.md`](docs/VISION.md) for
+the full plan, [`docs/BACKLOG.md`](docs/BACKLOG.md) for the build breakdown,
+and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for a map of the code.
 
 ## Development
 
