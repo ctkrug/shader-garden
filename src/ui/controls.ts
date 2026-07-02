@@ -112,10 +112,12 @@ function renderRangeControl(
   return field;
 }
 
-function displayName(uniformName: string): string {
+/** Strips the shader-convention leading "u" off a uniform name for display, e.g. "uSpeed" -> "Speed". */
+export function displayName(uniformName: string): string {
   return uniformName.replace(/^u/, "");
 }
 
-function formatValue(type: UniformType, value: number): string {
+/** Ints render without decimals; float/color channels render to 2 decimal places. */
+export function formatValue(type: UniformType, value: number): string {
   return type === "int" ? String(Math.round(value)) : value.toFixed(2);
 }
