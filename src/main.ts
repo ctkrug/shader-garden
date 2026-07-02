@@ -3,6 +3,7 @@ import { createGLContext } from "./gl/context";
 import { ShaderRenderer, type UniformValue } from "./gl/renderer";
 import { parseUniforms, type UniformType } from "./gl/uniforms";
 import { PRESETS, getPreset } from "./presets/registry";
+import { CustomPresetStore } from "./presets/customStore";
 import { renderGallery } from "./ui/gallery";
 import { renderControls } from "./ui/controls";
 import { crossfadeOut } from "./ui/crossfade";
@@ -37,6 +38,7 @@ const muteButton = app.querySelector(".mute-toggle") as HTMLButtonElement;
 const { gl, resize } = createGLContext(canvas);
 const renderer = new ShaderRenderer(gl, vertexSource, PRESETS[0].fragmentSource);
 const tick = new TickPlayer();
+const customPresets = new CustomPresetStore();
 
 let activePresetId = PRESETS[0].id;
 const uniformValues = new Map<string, UniformValue>();
@@ -61,7 +63,7 @@ function captureFrameSnapshot(): string | null {
 }
 
 function loadPreset(id: string, { crossfade = false } = {}): void {
-  const preset = getPreset(id);
+  const preset = getPreset(id) ?? customPresets.get(id);
   if (!preset) return;
 
   const snapshot = crossfade ? captureFrameSnapshot() : null;
@@ -84,7 +86,13 @@ function loadPreset(id: string, { crossfade = false } = {}): void {
     },
   });
 
-  renderGallery(galleryEl, PRESETS, activePresetId, { onSelect: swapPreset });
+  renderGallery(
+    galleryEl,
+    PRESETS,
+    activePresetId,
+    { onSelect: swapPreset, onFork: forkAndSwitch },
+    customPresets.all,
+  );
   tick.tick(880);
 
   if (snapshot) crossfadeOut(stageEl, snapshot);
@@ -93,6 +101,14 @@ function loadPreset(id: string, { crossfade = false } = {}): void {
 function swapPreset(id: string): void {
   if (id === activePresetId) return;
   loadPreset(id, { crossfade: true });
+}
+
+function forkAndSwitch(sourceId: string): void {
+  const source = getPreset(sourceId);
+  if (!source) return;
+
+  const forked = customPresets.fork(source);
+  loadPreset(forked.id, { crossfade: true });
 }
 
 muteButton.addEventListener("click", () => {
