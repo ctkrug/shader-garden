@@ -378,14 +378,35 @@ a {
 }
 
 .control-dock {
+  position: relative;
+  background: color-mix(in srgb, var(--surface-1) 90%, transparent);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--grid-line);
+}
+
+.control-dock--error {
+  animation: control-dock-error-pulse 150ms var(--ease-out);
+}
+
+@keyframes control-dock-error-pulse {
+  from {
+    box-shadow: inset 0 0 0 2px var(--danger);
+  }
+  to {
+    box-shadow: none;
+  }
+}
+
+.control-dock-handle {
+  display: none;
+}
+
+.control-dock-body {
   display: flex;
   flex-wrap: wrap;
   align-items: end;
   gap: var(--space-4);
   padding: var(--space-3) var(--space-4);
-  background: color-mix(in srgb, var(--surface-1) 90%, transparent);
-  backdrop-filter: blur(8px);
-  border-top: 1px solid var(--grid-line);
 }
 
 .control {
@@ -477,6 +498,50 @@ a {
   * {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 899.98px) {
+  .control-dock-handle {
+    display: block;
+    position: relative;
+    width: 100%;
+    min-height: 28px;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  .control-dock-handle::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--grid-line);
+    transform: translate(-50%, -50%);
+    transition: background-color 150ms var(--ease-out);
+  }
+
+  .control-dock-handle:hover::before {
+    background: var(--accent);
+  }
+
+  .control-dock-body {
+    max-height: 45vh;
+    overflow-y: auto;
+    align-items: stretch;
+    transition: max-height 200ms var(--ease-out), opacity 150ms var(--ease-out);
+  }
+
+  .control-dock.is-collapsed .control-dock-body {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    padding-top: 0;
+    padding-bottom: 0;
   }
 }
 
