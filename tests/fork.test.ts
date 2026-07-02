@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { forkPreset } from "../src/presets/fork";
+import { forkPreset, isForkedPreset } from "../src/presets/fork";
 import { PRESETS } from "../src/presets/registry";
 
 describe("forkPreset", () => {
@@ -27,5 +27,15 @@ describe("forkPreset", () => {
     const second = forkPreset(original);
 
     expect(first.id).not.toBe(second.id);
+  });
+});
+
+describe("isForkedPreset", () => {
+  it("is false for an original registry preset", () => {
+    expect(isForkedPreset(PRESETS[0])).toBe(false);
+  });
+
+  it("is true for a preset produced by forkPreset", () => {
+    expect(isForkedPreset(forkPreset(PRESETS[0]))).toBe(true);
   });
 });
