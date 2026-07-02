@@ -38,11 +38,11 @@ edges before the gallery and editor lean on it harder.
 
 ## Epic 4: GIF export
 
-- [ ] Frame capture loop: read back N frames from the canvas on a fixed cadence, decoupled from
+- [x] Frame capture loop: read back N frames from the canvas on a fixed cadence, decoupled from
       the live render loop's frame rate
-- [ ] Client-side GIF encoder producing a looping GIF from the captured frames (no server
+- [x] Client-side GIF encoder producing a looping GIF from the captured frames (no server
       round-trip)
-- [ ] Export UI: duration/fps/resolution controls, a progress indicator during encode, and a
+- [x] Export UI: duration/fps/resolution controls, a progress indicator during encode, and a
       download link on completion
-- [ ] Design polish: export button success-state morph (checkmark + success glow, 2s) per
+- [x] Design polish: export button success-state morph (checkmark + success glow, 2s) per
       `docs/DESIGN.md`'s juice plan
