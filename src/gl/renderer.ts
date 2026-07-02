@@ -53,7 +53,7 @@ export class ShaderRenderer {
     return cache.get(name) ?? null;
   }
 
-  private applyUniform(name: string, type: UniformType, value: number[]): void {
+  private applyUniform(name: string, type: UniformType, value: readonly number[]): void {
     const location = this.locationFor(name);
     if (!location) return; // unused uniform was optimized out by the compiler — not an error
 
@@ -89,8 +89,8 @@ export class ShaderRenderer {
     gl.bindVertexArray(this.vao);
 
     this.applyUniform("uTime", "float", [timeSeconds]);
-    this.applyUniform("uResolution", "vec2", resolution as number[]);
-    this.applyUniform("uMouse", "vec2", mouse as number[]);
+    this.applyUniform("uResolution", "vec2", resolution);
+    this.applyUniform("uMouse", "vec2", mouse);
 
     for (const [name, { type, value }] of uniforms) {
       this.applyUniform(name, type, value);
