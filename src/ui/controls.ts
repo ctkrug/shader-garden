@@ -1,9 +1,12 @@
 import type { UniformDecl, UniformType } from "../gl/uniforms";
-import { hexToRgb } from "./color";
+import { hexToRgb, rgbToHex } from "./color";
 
 export interface ControlsHandlers {
   onChange: (name: string, type: UniformType, value: number[]) => void;
 }
+
+/** Prior uniform values, keyed by name — carried across a hot-recompile so an in-progress edit doesn't reset every slider. */
+export type ControlValues = ReadonlyMap<string, { type: UniformType; value: number[] }>;
 
 /**
  * Builds the uniform control panel from parsed GLSL declarations. Only
@@ -11,25 +14,37 @@ export interface ControlsHandlers {
  * comment are exposed today — that covers every shipped preset. A decl
  * without enough UI hints to render sensibly is skipped rather than
  * guessed at.
+ *
+ * `initialValues` overrides a decl's meta `default:` when present (same
+ * name and type) — used when re-rendering after an edit-triggered
+ * recompile so a slider the user already moved stays where they left it.
  */
 export function renderControls(
   container: HTMLElement,
   decls: readonly UniformDecl[],
   handlers: ControlsHandlers,
+  initialValues: ControlValues = new Map(),
 ): void {
   container.innerHTML = "";
 
   for (const decl of decls) {
+    const prior = initialValues.get(decl.name);
+    const override = prior && prior.type === decl.type ? prior.value : undefined;
+
     if (decl.type === "vec3" && decl.meta.color) {
-      container.appendChild(renderColorControl(decl, handlers));
+      container.appendChild(renderColorControl(decl, handlers, override));
     } else if (decl.type === "float" || decl.type === "int") {
-      container.appendChild(renderRangeControl(decl, handlers));
+      container.appendChild(renderRangeControl(decl, handlers, override));
     }
   }
 }
 
-function renderColorControl(decl: UniformDecl, handlers: ControlsHandlers): HTMLElement {
-  const defaultHex = decl.meta.default ?? "#ffffff";
+function renderColorControl(
+  decl: UniformDecl,
+  handlers: ControlsHandlers,
+  override?: number[],
+): HTMLElement {
+  const defaultHex = override ? rgbToHex(override) : decl.meta.default ?? "#ffffff";
 
   const field = document.createElement("div");
   field.className = "control";
@@ -57,11 +72,15 @@ function renderColorControl(decl: UniformDecl, handlers: ControlsHandlers): HTML
   return field;
 }
 
-function renderRangeControl(decl: UniformDecl, handlers: ControlsHandlers): HTMLElement {
+function renderRangeControl(
+  decl: UniformDecl,
+  handlers: ControlsHandlers,
+  override?: number[],
+): HTMLElement {
   const min = Number(decl.meta.min ?? 0);
   const max = Number(decl.meta.max ?? 1);
   const step = Number(decl.meta.step ?? (decl.type === "int" ? 1 : 0.01));
-  const defaultValue = Number(decl.meta.default ?? min);
+  const defaultValue = override ? override[0] : Number(decl.meta.default ?? min);
 
   const field = document.createElement("div");
   field.className = "control";
