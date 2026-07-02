@@ -1,3 +1,5 @@
+import { safeLocalStorage } from "../util/safeStorage";
+
 const MUTE_STORAGE_KEY = "shader-garden:muted";
 
 /**
@@ -60,12 +62,4 @@ export class TickPlayer {
 function getAudioContextCtor(): typeof AudioContext | undefined {
   if (typeof window === "undefined") return undefined;
   return window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-}
-
-function safeLocalStorage(): Storage | null {
-  try {
-    return typeof window === "undefined" ? null : window.localStorage;
-  } catch {
-    return null;
-  }
 }
