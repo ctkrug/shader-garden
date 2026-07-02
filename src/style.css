@@ -260,8 +260,8 @@ a {
   border: 1px solid var(--grid-line);
   border-radius: var(--radius);
   color: var(--text-muted);
-  min-width: 32px;
-  min-height: 32px;
+  min-width: 44px;
+  min-height: 44px;
   cursor: pointer;
   transition: border-color 150ms var(--ease-out), color 150ms var(--ease-out);
 }
