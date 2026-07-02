@@ -100,7 +100,10 @@ export panel request (src/ui/exportPanel.ts)
     a fork button and, once `main.ts` has rendered one via `thumbnail.ts`, a
     thumbnail image), then a "Custom" section for anything in the
     `CustomPresetStore` (forks don't get thumbnails — their source changes
-    on every edit, so a cached frame would go stale immediately). The
+    on every edit, so a cached frame would go stale immediately; a card
+    with no thumbnail renders a `preset-card-thumb-fallback` pencil glyph
+    instead of an empty box — the same fallback also covers a preset
+    whose `thumbnail.ts` render itself failed). The
     desktop rail is CSS-collapsed to a 64px icon strip on top of this: the
     name/description move to a visually-hidden label plus the button's
     `aria-label`, and the fork button becomes a corner badge shown on
