@@ -50,6 +50,26 @@ margins around it.
 - No state has the canvas shrink to a small fixed-pixel box — it always resizes to fill its
   container at devicePixelRatio.
 
+## Live shader editor panel
+
+Editing only applies to a fork (the original gallery presets are never editable in place), so
+the surface is opt-in rather than always-on chrome:
+
+- A `</>` toggle button sits in the header next to the mute button — hidden unless the active
+  preset is a fork, so the control never implies you can edit an original.
+- Forking a preset auto-opens the panel (that's the whole point of forking); the toggle also
+  opens/closes it manually afterward.
+- The panel is a glassy `--surface-2` sheet that slides in from the stage's right edge
+  (`transform: translateX`, 200ms ease-out) rather than being display-toggled, so the CodeMirror
+  view underneath always has a real layout size to measure against. It's `min(440px, 100%)` wide,
+  which collapses to a full-width takeover on phone for free — no separate mobile treatment
+  needed.
+- Inside: a quiet header strip (`FRAGMENT SHADER` label + close button) over the code view,
+  themed to the same palette (surface-1 gutters, accent caret/selection, JetBrains Mono).
+- A CodeMirror edit debounces 400ms before recompiling; a failed compile pulses the control
+  dock border (`--danger`, 150ms — the existing "Compile error" juice entry above) and leaves
+  the last-good frame rendering underneath, so a typo mid-edit never blanks the canvas.
+
 ## Signature detail
 
 The wordmark **"SHADER GARDEN"** in the header is itself rendered with a live CSS effect: a
