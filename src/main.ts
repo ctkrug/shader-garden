@@ -178,6 +178,12 @@ function loadPreset(
   const preset = getPreset(id) ?? customPresets.get(id);
   if (!preset) return;
 
+  // Drop any in-flight debounced edit-apply/persist from whatever fork was
+  // previously active — left pending, it would fire after this swap and
+  // recompile/persist the *new* active preset with the *old* one's source.
+  debouncedApplyEdit.cancel();
+  debouncedPersist.cancel();
+
   const snapshot = crossfade ? captureFrameSnapshot() : null;
 
   try {
