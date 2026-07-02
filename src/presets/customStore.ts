@@ -22,4 +22,10 @@ export class CustomPresetStore {
     this.forks.push(forked);
     return forked;
   }
+
+  /** Overwrites a fork's source in place — used by the editor's hot-recompile path. No-ops for an unknown id. */
+  updateSource(id: string, fragmentSource: string): void {
+    const forked = this.get(id);
+    if (forked) forked.fragmentSource = fragmentSource;
+  }
 }
