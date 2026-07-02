@@ -24,9 +24,9 @@ function decodeForTest(encoded: Uint8Array, minCodeSize: number): number[] {
     return code;
   };
 
-  let dict: Map<number, number[]>;
-  let codeSize: number;
-  let nextCode: number;
+  let dict = new Map<number, number[]>();
+  let codeSize = minCodeSize + 1;
+  let nextCode = endCode + 1;
 
   const resetDict = (): void => {
     dict = new Map();
