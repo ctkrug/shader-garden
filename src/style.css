@@ -349,6 +349,20 @@ a {
   object-fit: cover;
 }
 
+.preset-card-thumb-fallback {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius);
+  border: 1px solid var(--grid-line);
+  background: var(--surface-1);
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
 .preset-card-label {
   display: flex;
   flex-direction: column;
