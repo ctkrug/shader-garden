@@ -74,6 +74,13 @@ describe("quantize", () => {
 
     expect(palette.indexOf(packColor(1, 1, 1))).toBe(0);
   });
+
+  it("returns a single-black-entry palette for an empty histogram", () => {
+    const palette = quantize(new Map(), 256);
+
+    expect(palette.colors).toEqual([{ r: 0, g: 0, b: 0 }]);
+    expect(palette.indexOf(packColor(255, 255, 255))).toBe(0);
+  });
 });
 
 describe("nearestColorIndex", () => {
