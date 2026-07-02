@@ -1,3 +1,4 @@
+import { FrameLoop } from "./app/frame-loop";
 import { createGLContext } from "./gl/context";
 import { ShaderRenderer, type UniformValue } from "./gl/renderer";
 import { parseUniforms, type UniformType } from "./gl/uniforms";
@@ -93,10 +94,9 @@ canvas.addEventListener("pointermove", (event) => {
 updateMuteButton();
 loadPreset(activePresetId);
 
-function frame(timeMs: number): void {
+const frameLoop = new FrameLoop((timeMs) => {
   resize();
   renderer.render(timeMs / 1000, [canvas.width, canvas.height], mouse, uniformValues);
-  requestAnimationFrame(frame);
-}
+});
 
-requestAnimationFrame(frame);
+frameLoop.start();
