@@ -4,10 +4,12 @@ import { ShaderRenderer, type UniformValue } from "./gl/renderer";
 import { parseUniforms, type UniformType } from "./gl/uniforms";
 import { PRESETS, getPreset } from "./presets/registry";
 import { CustomPresetStore } from "./presets/customStore";
+import { isForkedPreset } from "./presets/fork";
 import { renderGallery } from "./ui/gallery";
 import { renderControls } from "./ui/controls";
 import { crossfadeOut } from "./ui/crossfade";
 import { TickPlayer } from "./audio/tick";
+import { ShaderEditor } from "./editor/shaderEditor";
 import vertexSource from "./shaders/fullscreen.vert.glsl?raw";
 
 const app = document.getElementById("app");
@@ -17,12 +19,22 @@ app.innerHTML = `
   <div class="app-shell">
     <header class="app-header">
       <h1 class="wordmark">Shader Garden</h1>
-      <button class="mute-toggle" type="button" aria-pressed="false" aria-label="Mute sound"></button>
+      <div class="header-actions">
+        <button class="editor-toggle" type="button" aria-pressed="false" aria-label="Edit shader source" hidden>&lt;/&gt;</button>
+        <button class="mute-toggle" type="button" aria-pressed="false" aria-label="Mute sound"></button>
+      </div>
     </header>
     <nav class="gallery-rail" aria-label="Preset gallery"></nav>
     <main class="stage">
       <canvas></canvas>
       <pre class="stage-error" role="alert"></pre>
+      <aside class="editor-panel" aria-label="Shader source editor">
+        <div class="editor-panel-header">
+          <span>Fragment shader</span>
+          <button class="editor-close" type="button" aria-label="Close editor">✕</button>
+        </div>
+        <div class="editor-panel-body"></div>
+      </aside>
     </main>
     <footer class="control-dock" aria-label="Uniform controls"></footer>
   </div>
@@ -34,6 +46,10 @@ const galleryEl = app.querySelector(".gallery-rail") as HTMLElement;
 const controlsEl = app.querySelector(".control-dock") as HTMLElement;
 const errorEl = app.querySelector(".stage-error") as HTMLElement;
 const muteButton = app.querySelector(".mute-toggle") as HTMLButtonElement;
+const editorToggleButton = app.querySelector(".editor-toggle") as HTMLButtonElement;
+const editorCloseButton = app.querySelector(".editor-close") as HTMLButtonElement;
+const editorPanelEl = app.querySelector(".editor-panel") as HTMLElement;
+const editorPanelBodyEl = app.querySelector(".editor-panel-body") as HTMLElement;
 
 const { gl, resize } = createGLContext(canvas);
 const renderer = new ShaderRenderer(gl, vertexSource, PRESETS[0].fragmentSource);
@@ -43,6 +59,13 @@ const customPresets = new CustomPresetStore();
 let activePresetId = PRESETS[0].id;
 const uniformValues = new Map<string, UniformValue>();
 const mouse: [number, number] = [0, 0];
+
+let editor: ShaderEditor | null = null;
+let editorOpen = false;
+
+function getActivePreset() {
+  return getPreset(activePresetId) ?? customPresets.get(activePresetId);
+}
 
 function updateMuteButton(): void {
   muteButton.textContent = tick.isMuted ? "🔇" : "🔊";
@@ -60,6 +83,51 @@ function captureFrameSnapshot(): string | null {
     // Not fatal — the swap just happens as a hard cut instead of a dissolve.
     return null;
   }
+}
+
+function ensureEditor(source: string): ShaderEditor {
+  if (!editor) {
+    editor = new ShaderEditor(editorPanelBodyEl, source, {
+      onChange: () => {
+        // Wired up to trigger a debounced recompile in a follow-up change.
+      },
+    });
+  } else {
+    editor.setSource(source);
+  }
+  return editor;
+}
+
+function openEditor(): void {
+  const preset = getActivePreset();
+  if (!preset || !isForkedPreset(preset)) return;
+
+  ensureEditor(preset.fragmentSource);
+  editorOpen = true;
+  editorPanelEl.dataset.open = "true";
+  editorToggleButton.setAttribute("aria-pressed", "true");
+  editor?.focus();
+}
+
+function closeEditor(): void {
+  editorOpen = false;
+  editorPanelEl.dataset.open = "false";
+  editorToggleButton.setAttribute("aria-pressed", "false");
+}
+
+/** Re-syncs the editor toggle/panel to the active preset — call after any preset switch. */
+function refreshEditorPanel(): void {
+  const preset = getActivePreset();
+  const editable = !!preset && isForkedPreset(preset);
+
+  editorToggleButton.hidden = !editable;
+
+  if (!editable) {
+    closeEditor();
+    return;
+  }
+
+  if (editorOpen && preset) ensureEditor(preset.fragmentSource);
 }
 
 function loadPreset(id: string, { crossfade = false } = {}): void {
@@ -94,6 +162,7 @@ function loadPreset(id: string, { crossfade = false } = {}): void {
     customPresets.all,
   );
   tick.tick(880);
+  refreshEditorPanel();
 
   if (snapshot) crossfadeOut(stageEl, snapshot);
 }
@@ -109,12 +178,20 @@ function forkAndSwitch(sourceId: string): void {
 
   const forked = customPresets.fork(source);
   loadPreset(forked.id, { crossfade: true });
+  openEditor();
 }
 
 muteButton.addEventListener("click", () => {
   tick.toggle();
   updateMuteButton();
 });
+
+editorToggleButton.addEventListener("click", () => {
+  if (editorOpen) closeEditor();
+  else openEditor();
+});
+
+editorCloseButton.addEventListener("click", closeEditor);
 
 canvas.addEventListener("pointermove", (event) => {
   const rect = canvas.getBoundingClientRect();
