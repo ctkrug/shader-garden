@@ -30,6 +30,16 @@ Selecting a preset in the gallery (`src/ui/gallery.ts`) calls `loadPreset()` in
 control panel — the control panel is always regenerated from source, never
 hand-wired per preset.
 
+Editing a fork follows the same pipeline through a different entry point:
+`ShaderEditor`'s debounced `onChange` (`src/editor/debounce.ts`, 400ms) calls
+`applyEditorSource()` in `main.ts`, which recompiles, commits the edit to the
+fork (`CustomPresetStore.updateSource()`), and re-renders the control panel —
+passing the *current* uniform values as `initialValues` so `renderControls()`
+restores each slider/color picker instead of resetting it to the shader's
+meta default. A failed recompile throws before the old program is touched
+(`ShaderRenderer.recompile()`), so the last-good frame keeps rendering while
+the error surfaces inline.
+
 ## Modules
 
 - **`src/gl/`** — the hand-rolled WebGL2 pipeline, no scene-graph library.
@@ -50,9 +60,13 @@ hand-wired per preset.
     description, fragmentSource }`. Never mutated at runtime.
   - `fork.ts` — `forkPreset()` copies a preset's source under a new id
     (`forkedFrom` records the original). Pure function, no state.
+    `isForkedPreset()` is the type guard the app shell uses to decide
+    whether the editor/persistence apply to the active preset.
   - `customStore.ts` — `CustomPresetStore`, the session-lifetime list of
     forks. Kept separate from `PRESETS` so a fork can never replace an
-    original gallery entry.
+    original gallery entry. `updateSource()` overwrites a fork's source in
+    place — the editor's hot-recompile path commits edits here rather than
+    holding a second, divergent copy of the text.
 - **`src/ui/`** — DOM rendering, no framework.
   - `gallery.ts` — renders the preset rail: one card per `PRESETS` entry (with
     a fork button), then a "Custom" section for anything in the
@@ -60,9 +74,33 @@ hand-wired per preset.
   - `controls.ts` — renders the uniform control panel from `UniformDecl[]`;
     a `vec3` with a `color` meta flag becomes a color input, `float`/`int`
     become range sliders. Anything else is skipped rather than guessed at.
-  - `color.ts` — `hexToRgb()`, the color-input <-> shader-uniform conversion.
+    Takes an optional `initialValues` map (`ControlValues`) so a re-render
+    after a hot-recompile can restore a control to its current value
+    instead of the shader's meta default.
+  - `color.ts` — `hexToRgb()`/`rgbToHex()`, the color-input <-> shader-uniform
+    conversion (`rgbToHex` is what lets a color control's re-render reflect
+    a live uniform value rather than only ever the meta default).
   - `crossfade.ts` — `crossfadeOut()` overlays a snapshot `<img>` over the
     stage and fades it out, so a preset swap dissolves instead of hard-cutting.
+- **`src/editor/`** — the live source editor for a forked preset.
+  - `shaderEditor.ts` — `ShaderEditor`, a CodeMirror 6 view themed to the
+    blueprint palette (`cpp()` provides GLSL-adjacent syntax highlighting —
+    there's no dedicated GLSL language package). `onChange` fires only for
+    user edits, not for the programmatic `setSource()` used when switching
+    which fork is displayed (distinguished via the transaction's
+    `userEvent` annotation). Loaded behind a dynamic `import()` in
+    `main.ts` so its ~500KB doesn't block the canvas's first frame.
+  - `debounce.ts` — generic `debounce()` with injectable timer functions
+    (same DI pattern as `FrameLoop`). Used both for edit-triggered
+    recompiles (400ms) and edit-triggered persistence writes (300ms).
+- **`src/persistence/customState.ts`** — `saveCustomState()`/
+  `loadCustomState()`/`clearCustomState()`, best-effort `localStorage`
+  persistence (one entry: the most-recently-edited fork's source + uniform
+  values) so a reload restores in-progress editing. A runtime shape check
+  on load treats a corrupted or stale value as absent rather than crashing.
+- **`src/util/safeStorage.ts`** — `safeLocalStorage()`, guarded
+  `window.localStorage` access shared by `TickPlayer` and
+  `persistence/customState.ts`.
 - **`src/app/`**
   - `frame-loop.ts` — `FrameLoop` wraps `requestAnimationFrame` and pauses
     itself on `document.visibilitychange` so a backgrounded tab stops
@@ -71,19 +109,22 @@ hand-wired per preset.
   blip (no audio files) with a `localStorage`-persisted mute flag. Every
   method no-ops without an `AudioContext` (tests, older browsers).
 - **`src/main.ts`** — wires all of the above into the app shell: builds the
-  DOM skeleton, owns the active-preset/uniform-values state, and drives the
-  `FrameLoop`.
+  DOM skeleton, owns the active-preset/uniform-values state, opens/closes
+  the editor panel, and drives the `FrameLoop`.
 
 ## Testing approach
 
 `tests/` covers pure logic only (uniform parsing, DPR clamp, fork/store
 isolation, frame-loop scheduling with injected fakes, color conversion, mute
-persistence) — see `vite.config.ts`'s `test.environment: "node"`. DOM-heavy
-modules (`gallery.ts`, `controls.ts`, `crossfade.ts`) are intentionally left
-untested at the unit level: this environment's Node version predates what the
-current `jsdom` requires (confirmed by trying it — `ERR_REQUIRE_ESM` from a
-transitive dep), so DOM assertions aren't practical here. Verify UI changes by
-running `npm run dev` and checking in a real/headless browser instead.
+persistence, edit-recompile debouncing, custom-state save/load) — see
+`vite.config.ts`'s `test.environment: "node"`. DOM-heavy modules
+(`gallery.ts`, `controls.ts`, `crossfade.ts`, `shaderEditor.ts`) are
+intentionally left untested at the unit level: this environment's Node
+version predates what the current `jsdom` requires (confirmed by trying it —
+`ERR_REQUIRE_ESM` from a transitive dep), so DOM assertions aren't practical
+here. Verify UI changes by running `npm run dev` and checking in a
+real/headless browser instead (a Playwright + Chromium install is available
+in this environment for that).
 
 ## Build & deploy
 
