@@ -6,10 +6,11 @@ import { PRESETS, getPreset } from "./presets/registry";
 import { CustomPresetStore } from "./presets/customStore";
 import { isForkedPreset } from "./presets/fork";
 import { renderGallery } from "./ui/gallery";
-import { renderControls } from "./ui/controls";
+import { renderControls, type ControlValues } from "./ui/controls";
 import { crossfadeOut } from "./ui/crossfade";
 import { TickPlayer } from "./audio/tick";
 import { ShaderEditor } from "./editor/shaderEditor";
+import { debounce } from "./editor/debounce";
 import vertexSource from "./shaders/fullscreen.vert.glsl?raw";
 
 const app = document.getElementById("app");
@@ -88,9 +89,7 @@ function captureFrameSnapshot(): string | null {
 function ensureEditor(source: string): ShaderEditor {
   if (!editor) {
     editor = new ShaderEditor(editorPanelBodyEl, source, {
-      onChange: () => {
-        // Wired up to trigger a debounced recompile in a follow-up change.
-      },
+      onChange: (nextSource) => debouncedApplyEdit(nextSource),
     });
   } else {
     editor.setSource(source);
@@ -130,7 +129,14 @@ function refreshEditorPanel(): void {
   if (editorOpen && preset) ensureEditor(preset.fragmentSource);
 }
 
-function loadPreset(id: string, { crossfade = false } = {}): void {
+function handleUniformChange(name: string, type: UniformType, value: number[]): void {
+  uniformValues.set(name, { type, value });
+}
+
+function loadPreset(
+  id: string,
+  { crossfade = false, initialValues }: { crossfade?: boolean; initialValues?: ControlValues } = {},
+): void {
   const preset = getPreset(id) ?? customPresets.get(id);
   if (!preset) return;
 
@@ -148,11 +154,7 @@ function loadPreset(id: string, { crossfade = false } = {}): void {
   uniformValues.clear();
 
   const decls = parseUniforms(preset.fragmentSource);
-  renderControls(controlsEl, decls, {
-    onChange: (name: string, type: UniformType, value: number[]) => {
-      uniformValues.set(name, { type, value });
-    },
-  });
+  renderControls(controlsEl, decls, { onChange: handleUniformChange }, initialValues);
 
   renderGallery(
     galleryEl,
@@ -165,6 +167,34 @@ function loadPreset(id: string, { crossfade = false } = {}): void {
   refreshEditorPanel();
 
   if (snapshot) crossfadeOut(stageEl, snapshot);
+}
+
+/** Recompiles against a debounced editor edit. Keeps the last-good frame on a compile error (renderer.recompile already leaves the old program intact). */
+function applyEditorSource(source: string): void {
+  const preset = getActivePreset();
+  if (!preset || !isForkedPreset(preset)) return;
+
+  try {
+    renderer.recompile(source);
+  } catch (err) {
+    showError(err instanceof Error ? err.message : String(err));
+    pulseControlDockError();
+    return;
+  }
+
+  showError(null);
+  customPresets.updateSource(preset.id, source);
+
+  const decls = parseUniforms(source);
+  renderControls(controlsEl, decls, { onChange: handleUniformChange }, uniformValues);
+}
+
+const debouncedApplyEdit = debounce(applyEditorSource, 400);
+
+function pulseControlDockError(): void {
+  controlsEl.classList.remove("control-dock--error");
+  void controlsEl.offsetWidth; // restart the CSS animation
+  controlsEl.classList.add("control-dock--error");
 }
 
 function swapPreset(id: string): void {
