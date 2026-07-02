@@ -38,14 +38,19 @@ app.innerHTML = `
         <div class="editor-panel-body"></div>
       </aside>
     </main>
-    <footer class="control-dock" aria-label="Uniform controls"></footer>
+    <footer class="control-dock is-collapsed" aria-label="Uniform controls">
+      <button class="control-dock-handle" type="button" aria-label="Toggle uniform controls" aria-expanded="false"></button>
+      <div class="control-dock-body"></div>
+    </footer>
   </div>
 `;
 
 const stageEl = app.querySelector(".stage") as HTMLElement;
 const canvas = app.querySelector("canvas") as HTMLCanvasElement;
 const galleryEl = app.querySelector(".gallery-rail") as HTMLElement;
-const controlsEl = app.querySelector(".control-dock") as HTMLElement;
+const controlsEl = app.querySelector(".control-dock-body") as HTMLElement;
+const controlDockEl = app.querySelector(".control-dock") as HTMLElement;
+const controlDockHandle = app.querySelector(".control-dock-handle") as HTMLButtonElement;
 const errorEl = app.querySelector(".stage-error") as HTMLElement;
 const muteButton = app.querySelector(".mute-toggle") as HTMLButtonElement;
 const editorToggleButton = app.querySelector(".editor-toggle") as HTMLButtonElement;
@@ -212,9 +217,9 @@ function applyEditorSource(source: string): void {
 const debouncedApplyEdit = debounce(applyEditorSource, 400);
 
 function pulseControlDockError(): void {
-  controlsEl.classList.remove("control-dock--error");
-  void controlsEl.offsetWidth; // restart the CSS animation
-  controlsEl.classList.add("control-dock--error");
+  controlDockEl.classList.remove("control-dock--error");
+  void controlDockEl.offsetWidth; // restart the CSS animation
+  controlDockEl.classList.add("control-dock--error");
 }
 
 function swapPreset(id: string): void {
@@ -256,6 +261,11 @@ editorToggleButton.addEventListener("click", () => {
 });
 
 editorCloseButton.addEventListener("click", closeEditor);
+
+controlDockHandle.addEventListener("click", () => {
+  const collapsed = controlDockEl.classList.toggle("is-collapsed");
+  controlDockHandle.setAttribute("aria-expanded", String(!collapsed));
+});
 
 canvas.addEventListener("pointermove", (event) => {
   const rect = canvas.getBoundingClientRect();
