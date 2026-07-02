@@ -40,6 +40,15 @@ meta default. A failed recompile throws before the old program is touched
 (`ShaderRenderer.recompile()`), so the last-good frame keeps rendering while
 the error surfaces inline.
 
+**Invariant:** `loadPreset()` (in `main.ts`) cancels both debounced calls
+(`debouncedApplyEdit`, `debouncedPersist`) before doing anything else. Both
+debounces close over the module-level `uniformValues` map and re-derive the
+active preset at *fire* time rather than *call* time, so a still-pending
+edit-apply/persist from the fork you were just editing would otherwise land
+on whatever preset is active by the time the timer fires — recompiling/
+persisting the wrong preset with stale source or mismatched uniform values.
+Any future code path that swaps the active preset needs the same cancel.
+
 GIF export is a parallel pipeline off the same `ShaderRenderer` class, driven
 independently of the live `FrameLoop`:
 
