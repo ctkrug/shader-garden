@@ -53,7 +53,7 @@ function buildCard(
   // hiding .preset-card-label — aria-label keeps the accessible name intact
   // there even though it duplicates the (visible-on-mobile) label text.
   select.setAttribute("aria-label", preset.name);
-  select.title = `${preset.name} — ${preset.description}`;
+  select.title = `${preset.name}: ${preset.description}`;
 
   if (thumbnail) {
     const thumb = document.createElement("img");

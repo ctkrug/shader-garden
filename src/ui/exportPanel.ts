@@ -16,9 +16,9 @@ interface SizePreset {
 }
 
 const SIZE_PRESETS: readonly SizePreset[] = [
-  { label: "Small — 320×180", width: 320, height: 180 },
-  { label: "Medium — 480×270", width: 480, height: 270 },
-  { label: "Large — 640×360", width: 640, height: 360 },
+  { label: "Small · 320×180", width: 320, height: 180 },
+  { label: "Medium · 480×270", width: 480, height: 270 },
+  { label: "Large · 640×360", width: 640, height: 360 },
 ];
 
 const FPS_OPTIONS = [10, 15, 20, 24];
