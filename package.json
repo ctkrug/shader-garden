@@ -1,0 +1,22 @@
+{
+  "name": "shader-garden",
+  "private": true,
+  "version": "0.1.0",
+  "description": "A live GLSL playground with a gallery of generative-art presets you can fork, tweak, and export as a looping GIF.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.6",
+    "vitest": "^2.1.1"
+  }
+}
