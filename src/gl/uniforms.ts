@@ -41,6 +41,18 @@ export function parseUniforms(source: string): UniformDecl[] {
   return decls;
 }
 
+/**
+ * Reads a numeric meta value (`min`/`max`/`step`/`default`), falling back to
+ * `fallback` when the key is absent *or* its value isn't a valid number — a
+ * fork's meta comment is hand-typed text, so a typo shouldn't propagate a
+ * silent NaN into a control's slider bounds or a uniform's default value.
+ */
+export function parseMetaNumber(value: string | undefined, fallback: number): number {
+  if (value === undefined) return fallback;
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? fallback : parsed;
+}
+
 function parseMeta(comment: string): Record<string, string> {
   const meta: Record<string, string> = {};
 

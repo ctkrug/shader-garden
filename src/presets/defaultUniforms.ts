@@ -1,5 +1,5 @@
 import type { UniformValue } from "../gl/renderer";
-import type { UniformDecl } from "../gl/uniforms";
+import { parseMetaNumber, type UniformDecl } from "../gl/uniforms";
 import { hexToRgb } from "../ui/color";
 
 /**
@@ -16,8 +16,8 @@ export function defaultUniformValues(decls: readonly UniformDecl[]): Map<string,
     if (decl.type === "vec3" && decl.meta.color) {
       values.set(decl.name, { type: "vec3", value: hexToRgb(decl.meta.default ?? "#ffffff") });
     } else if (decl.type === "float" || decl.type === "int") {
-      const min = Number(decl.meta.min ?? 0);
-      values.set(decl.name, { type: decl.type, value: [Number(decl.meta.default ?? min)] });
+      const min = parseMetaNumber(decl.meta.min, 0);
+      values.set(decl.name, { type: decl.type, value: [parseMetaNumber(decl.meta.default, min)] });
     }
   }
 

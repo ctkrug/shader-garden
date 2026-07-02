@@ -1,4 +1,4 @@
-import type { UniformDecl, UniformType } from "../gl/uniforms";
+import { parseMetaNumber, type UniformDecl, type UniformType } from "../gl/uniforms";
 import { hexToRgb, rgbToHex } from "./color";
 
 export interface ControlsHandlers {
@@ -77,10 +77,10 @@ function renderRangeControl(
   handlers: ControlsHandlers,
   override?: number[],
 ): HTMLElement {
-  const min = Number(decl.meta.min ?? 0);
-  const max = Number(decl.meta.max ?? 1);
-  const step = Number(decl.meta.step ?? (decl.type === "int" ? 1 : 0.01));
-  const defaultValue = override ? override[0] : Number(decl.meta.default ?? min);
+  const min = parseMetaNumber(decl.meta.min, 0);
+  const max = parseMetaNumber(decl.meta.max, 1);
+  const step = parseMetaNumber(decl.meta.step, decl.type === "int" ? 1 : 0.01);
+  const defaultValue = override ? override[0] : parseMetaNumber(decl.meta.default, min);
 
   const field = document.createElement("div");
   field.className = "control";

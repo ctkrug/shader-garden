@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseUniforms } from "../src/gl/uniforms";
+import { parseMetaNumber, parseUniforms } from "../src/gl/uniforms";
 
 describe("parseUniforms", () => {
   it("extracts declared uniforms with their type", () => {
@@ -48,5 +48,23 @@ describe("parseUniforms", () => {
 
   it("returns an empty list for source with no uniforms", () => {
     expect(parseUniforms("void main() {}")).toEqual([]);
+  });
+});
+
+describe("parseMetaNumber", () => {
+  it("parses a valid numeric string", () => {
+    expect(parseMetaNumber("1.2", 0)).toBe(1.2);
+  });
+
+  it("falls back for an absent value", () => {
+    expect(parseMetaNumber(undefined, 5)).toBe(5);
+  });
+
+  it("falls back for a non-numeric value instead of returning NaN", () => {
+    expect(parseMetaNumber("fast", 5)).toBe(5);
+  });
+
+  it("falls back for a value with trailing non-numeric characters", () => {
+    expect(parseMetaNumber("1.2px", 5)).toBe(5);
   });
 });
