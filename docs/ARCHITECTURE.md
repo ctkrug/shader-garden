@@ -64,6 +64,10 @@ export panel request (src/ui/exportPanel.ts)
     for why uncapped DPR is a real perf problem on retina phones).
   - `program.ts` — compile/link with typed `ShaderCompileError` /
     `ProgramLinkError` so callers can surface the raw GL info log.
+    `cleanInfoLog()` strips the trailing NUL byte some ANGLE/driver
+    combinations pad the log with (otherwise it renders as a stray tofu
+    glyph in the inline error panel) — exported and unit-tested on its
+    own since `createProgram()` itself needs a real WebGL2 context.
   - `uniforms.ts` — `parseUniforms()`, the reflection step described in
     VISION.md: regexes `uniform <type> <name>; // key:val key:val` out of
     fragment source. This is the whole "schema" — no manifest files.
