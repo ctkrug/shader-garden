@@ -5,6 +5,7 @@ import { parseUniforms, type UniformType } from "./gl/uniforms";
 import { PRESETS, getPreset } from "./presets/registry";
 import { renderGallery } from "./ui/gallery";
 import { renderControls } from "./ui/controls";
+import { crossfadeOut } from "./ui/crossfade";
 import { TickPlayer } from "./audio/tick";
 import vertexSource from "./shaders/fullscreen.vert.glsl?raw";
 
@@ -26,6 +27,7 @@ app.innerHTML = `
   </div>
 `;
 
+const stageEl = app.querySelector(".stage") as HTMLElement;
 const canvas = app.querySelector("canvas") as HTMLCanvasElement;
 const galleryEl = app.querySelector(".gallery-rail") as HTMLElement;
 const controlsEl = app.querySelector(".control-dock") as HTMLElement;
@@ -49,9 +51,20 @@ function showError(message: string | null): void {
   errorEl.textContent = message ?? "";
 }
 
-function loadPreset(id: string): void {
+function captureFrameSnapshot(): string | null {
+  try {
+    return canvas.toDataURL("image/png");
+  } catch {
+    // Not fatal — the swap just happens as a hard cut instead of a dissolve.
+    return null;
+  }
+}
+
+function loadPreset(id: string, { crossfade = false } = {}): void {
   const preset = getPreset(id);
   if (!preset) return;
+
+  const snapshot = crossfade ? captureFrameSnapshot() : null;
 
   try {
     renderer.recompile(preset.fragmentSource);
@@ -73,11 +86,13 @@ function loadPreset(id: string): void {
 
   renderGallery(galleryEl, PRESETS, activePresetId, { onSelect: swapPreset });
   tick.tick(880);
+
+  if (snapshot) crossfadeOut(stageEl, snapshot);
 }
 
 function swapPreset(id: string): void {
   if (id === activePresetId) return;
-  loadPreset(id);
+  loadPreset(id, { crossfade: true });
 }
 
 muteButton.addEventListener("click", () => {
