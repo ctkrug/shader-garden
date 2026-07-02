@@ -199,19 +199,25 @@ export panel request (src/ui/exportPanel.ts)
 `tests/` covers pure logic only (uniform parsing, default-uniform resolution,
 DPR clamp, fork/store isolation, frame-loop scheduling with injected fakes,
 color conversion, mute persistence, edit-recompile debouncing, custom-state
-save/load, GIF frame timing, median-cut quantization, LZW encoding, and full
-GIF89a byte-stream assembly) — see `vite.config.ts`'s `test.environment:
-"node"`. The LZW and GIF encoder tests round-trip their output through a
-hand-written decoder/parser in the test file itself — the strongest
-correctness check available without an external reference GIF. DOM-heavy
-modules (`gallery.ts`, `controls.ts`, `crossfade.ts`, `shaderEditor.ts`,
-`exportPanel.ts`) and the WebGL-dependent `gifExporter.ts`/`thumbnail.ts`
-are intentionally left untested at the unit level: this environment's Node
-version predates what the current `jsdom` requires (confirmed by trying it
-— `ERR_REQUIRE_ESM` from a transitive dep), so DOM/WebGL assertions aren't
-practical here. Verify UI changes by running `npm run dev` and checking in
-a real/headless browser instead (a Playwright + Chromium install is
-available in this environment for that).
+save/load, GIF frame timing, median-cut quantization, LZW encoding, full
+GIF89a byte-stream assembly, the localStorage guard in `safeStorage.ts`, the
+shader compile/link error log cleanup in `program.ts`, and the uniform
+display-name/value-formatting helpers pulled out of `controls.ts`) — see
+`vite.config.ts`'s `test.environment: "node"`. The LZW and GIF encoder tests
+round-trip their output through a hand-written decoder/parser in the test
+file itself — the strongest correctness check available without an external
+reference GIF. DOM-heavy modules (`gallery.ts`, most of `controls.ts`,
+`crossfade.ts`, `shaderEditor.ts`, `exportPanel.ts`) and the WebGL-dependent
+`gifExporter.ts`/`thumbnail.ts`/`renderer.ts`/`context.ts` are intentionally
+left untested at the unit level: this environment's Node version predates
+what the current `jsdom` requires (confirmed by trying it — `ERR_REQUIRE_ESM`
+from a transitive dep), so DOM/WebGL assertions aren't practical here. Where
+a module is mostly DOM/WebGL glue but has a pure formatting/parsing seam
+(`cleanInfoLog`, `displayName`, `formatValue`), that seam is exported and
+tested on its own rather than left uncovered along with the rest of the
+file. Verify UI changes by running `npm run dev` and checking in a
+real/headless browser instead (a Playwright + Chromium install is available
+in this environment for that).
 
 ## Build & deploy
 
