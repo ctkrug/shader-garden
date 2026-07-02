@@ -20,6 +20,7 @@
   --space-5: 32px;
   --space-6: 48px;
 
+  --rail-width: 208px;
   --radius: 4px;
   --glow: 0 0 12px rgba(126, 227, 255, 0.25);
 
@@ -342,7 +343,7 @@ a {
 
 @media (min-width: 900px) {
   .app-shell {
-    grid-template-columns: 64px 1fr;
+    grid-template-columns: var(--rail-width) 1fr;
     grid-template-rows: auto 1fr;
   }
 
@@ -369,7 +370,7 @@ a {
 
   .control-dock {
     position: absolute;
-    left: 64px;
+    left: var(--rail-width);
     right: 0;
     bottom: 0;
   }
