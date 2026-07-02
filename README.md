@@ -27,8 +27,11 @@ into live controls automatically, and lets you walk away with a shareable artifa
   to `localStorage`, so a page reload picks up right where you left off.
 - **Real-time preview** — a fullscreen WebGL2 canvas rendered at device pixel ratio,
   driven by a compact render loop (time, resolution, mouse).
-- **GIF export** — capture N frames of the render loop client-side and encode a
-  looping GIF, no server round-trip.
+- **GIF export** — pick a resolution, duration, and frame rate; the current
+  shader renders off-screen at a fixed capture cadence, gets color-quantized
+  and LZW-encoded into a looping GIF, and downloads straight from the
+  browser — no server round-trip, no dependency (the encoder is hand-rolled,
+  same as the WebGL pipeline).
 
 ## Stack
 
@@ -37,12 +40,12 @@ into live controls automatically, and lets you walk away with a shareable artifa
   compile/link, uniform reflection, render loop) is hand-rolled on purpose; that's
   the point of the project.
 - **Vitest** for unit tests on the non-GL logic (uniform parsing, preset registry,
-  GIF frame timing).
+  GIF frame timing, color quantization, LZW/GIF89a encoding).
 
 ## Status
 
-Core rendering pipeline, gallery/forking, and live in-browser editing (with
-reload-safe persistence) are in place; GIF export is next. See
+The core rendering pipeline, gallery/forking, live in-browser editing (with
+reload-safe persistence), and GIF export are all in place end to end. See
 [`docs/VISION.md`](docs/VISION.md) for the full plan,
 [`docs/BACKLOG.md`](docs/BACKLOG.md) for the build breakdown, and
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for a map of the code.
