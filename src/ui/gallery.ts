@@ -62,6 +62,15 @@ function buildCard(
     thumb.alt = "";
     thumb.setAttribute("aria-hidden", "true");
     select.appendChild(thumb);
+  } else {
+    // Forks never get a cached thumbnail (their source changes on every
+    // edit), and an original preset's thumbnail can also fail to render —
+    // either way the icon-only desktop rail must not show a blank card.
+    const fallback = document.createElement("span");
+    fallback.className = "preset-card-thumb-fallback";
+    fallback.textContent = "✎";
+    fallback.setAttribute("aria-hidden", "true");
+    select.appendChild(fallback);
   }
 
   const label = document.createElement("span");
