@@ -37,10 +37,13 @@ The **canvas is the hero** — it renders fullscreen behind everything else, alw
 viewport, with the blueprint grid as a faint overlay on the page background visible only in the
 margins around it.
 
-- **Desktop (1440×900):** canvas fills the viewport edge-to-edge. A slim 64px icon rail sits on
-  the left edge (gallery: preset thumbnails, click to swap). A floating, semi-translucent
-  control dock is pinned to the bottom (uniform sliders/color swatches + export button),
-  glassy over the canvas rather than pushing it into a smaller box.
+- **Desktop (1440×900):** canvas fills the viewport edge-to-edge. A gallery rail sits on the
+  left edge (click a card to swap). Once cards render live thumbnails instead of text
+  (backlog epic 2), this collapses to a slim 64px icon rail; until then it's 208px
+  (`--rail-width`) so the name/description text has room to read instead of wrapping
+  letter-by-letter. A floating, semi-translucent control dock is pinned to the bottom
+  (uniform sliders/color swatches + export button), glassy over the canvas rather than
+  pushing it into a smaller box.
 - **Phone (390×844):** canvas takes the top ~58% of the viewport. Below it, a horizontally
   scrollable filmstrip of preset thumbnails, then a collapsible bottom sheet for uniform
   controls (collapsed by default, tap the handle to expand) so the render stays dominant.
