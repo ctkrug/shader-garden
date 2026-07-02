@@ -8,11 +8,11 @@ single build run. All start unchecked.
 The scaffold (context, program, uniform reflection, renderer) exists; this epic rounds off the
 edges before the gallery and editor lean on it harder.
 
-- [ ] Pause the render loop on `visibilitychange` (hidden tab) to avoid burning battery/CPU
+- [x] Pause the render loop on `visibilitychange` (hidden tab) to avoid burning battery/CPU
       on a backgrounded page
-- [ ] Verify DPR-aware resize across a real range of devices/zoom levels, not just the dev
+- [x] Verify DPR-aware resize across a real range of devices/zoom levels, not just the dev
       machine, and fix any blur/letterboxing found
-- [ ] Design polish: 200ms crossfade between the outgoing and incoming preset frame on swap,
+- [x] Design polish: 200ms crossfade between the outgoing and incoming preset frame on swap,
       per `docs/DESIGN.md`'s juice plan (currently a hard cut)
 
 ## Epic 2: Preset gallery
