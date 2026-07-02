@@ -20,7 +20,7 @@
   --space-5: 32px;
   --space-6: 48px;
 
-  --rail-width: 236px;
+  --rail-width: 64px;
   --radius: 4px;
   --glow: 0 0 12px rgba(126, 227, 255, 0.25);
 
@@ -326,8 +326,8 @@ a {
 .preset-card-select {
   flex: 1 1 auto;
   display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  align-items: center;
+  gap: var(--space-2);
   background: none;
   border: none;
   padding: var(--space-2) var(--space-3);
@@ -338,6 +338,22 @@ a {
 
 .preset-card-select:active {
   transform: translateY(1px);
+}
+
+.preset-card-thumb {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius);
+  border: 1px solid var(--grid-line);
+  object-fit: cover;
+}
+
+.preset-card-label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
 }
 
 .preset-card-select .name {
@@ -675,7 +691,46 @@ a {
   }
 
   .preset-card {
+    position: relative;
     min-width: 0;
+  }
+
+  /* Icon-only rail: the thumbnail carries the card, the name/description
+     become the button's accessible name instead of visible text (see the
+     aria-label gallery.ts sets), and the fork action tucks into a corner
+     badge that only takes up space on hover/focus. */
+  .preset-card-select {
+    flex-direction: column;
+    justify-content: center;
+    padding: var(--space-2);
+  }
+
+  .preset-card-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .preset-card-fork {
+    position: absolute;
+    top: var(--space-1);
+    right: var(--space-1);
+    margin-right: 0;
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+    opacity: 0;
+  }
+
+  .preset-card:hover .preset-card-fork,
+  .preset-card:focus-within .preset-card-fork {
+    opacity: 1;
   }
 
   .stage {
