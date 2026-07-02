@@ -110,6 +110,13 @@ a {
   }
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.editor-toggle,
 .mute-toggle {
   background: var(--surface-1);
   border: 1px solid var(--grid-line);
@@ -119,6 +126,27 @@ a {
   cursor: pointer;
   transition: border-color 150ms var(--ease-out), box-shadow 150ms var(--ease-out);
   font-size: 18px;
+}
+
+.editor-toggle {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.editor-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.editor-toggle:active {
+  transform: translateY(1px);
+}
+
+.editor-toggle[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: var(--glow);
 }
 
 .mute-toggle:hover {
