@@ -15,7 +15,7 @@ into live controls automatically, and lets you walk away with a shareable artifa
 
 - **Gallery of presets** — six hand-written generative-art shaders (plasma, flow
   fields, voronoi cells, a ray-marched tunnel, wave interference, kaleidoscope)
-  to fork and remix.
+  to fork and remix, each with a live-rendered thumbnail on its gallery card.
 - **Fork, don't destroy** — forking a preset copies its source into an editable
   custom slot; the original gallery entry never mutates, so it's always the
   reset target.
@@ -44,8 +44,9 @@ into live controls automatically, and lets you walk away with a shareable artifa
 
 ## Status
 
-The core rendering pipeline, gallery/forking, live in-browser editing (with
-reload-safe persistence), and GIF export are all in place end to end. See
+v1 is functionally complete: the core rendering pipeline, gallery with
+thumbnails and forking, live in-browser editing (with reload-safe
+persistence), and GIF export are all in place end to end. See
 [`docs/VISION.md`](docs/VISION.md) for the full plan,
 [`docs/BACKLOG.md`](docs/BACKLOG.md) for the build breakdown, and
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for a map of the code.
