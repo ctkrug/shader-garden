@@ -418,6 +418,12 @@ a {
   padding: var(--space-3) var(--space-4);
 }
 
+/* No box of its own — its .control children lay out directly in the
+   control-dock-body flex row/wrap alongside the export panel. */
+.uniform-controls {
+  display: contents;
+}
+
 .control {
   display: flex;
   flex-direction: column;
