@@ -1,3 +1,12 @@
+/**
+ * Some ANGLE/driver combinations pad `getShaderInfoLog`/`getProgramInfoLog`
+ * with a trailing NUL byte, which renders as a tofu glyph when the raw log
+ * is dropped straight into the DOM (see the editor's inline error panel).
+ */
+function cleanInfoLog(log: string | null): string | null {
+  return log?.replace(/\0+$/, "").trim() ?? null;
+}
+
 export class ShaderCompileError extends Error {
   constructor(
     public readonly stage: "vertex" | "fragment",
@@ -31,7 +40,7 @@ function compileShader(
   gl.compileShader(shader);
 
   if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    const log = gl.getShaderInfoLog(shader) ?? "unknown compile error";
+    const log = cleanInfoLog(gl.getShaderInfoLog(shader)) ?? "unknown compile error";
     gl.deleteShader(shader);
     throw new ShaderCompileError(type, log);
   }
@@ -67,7 +76,7 @@ export function createProgram(
   gl.deleteShader(fragmentShader);
 
   if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    const log = gl.getProgramInfoLog(program) ?? "unknown link error";
+    const log = cleanInfoLog(gl.getProgramInfoLog(program)) ?? "unknown link error";
     gl.deleteProgram(program);
     throw new ProgramLinkError(log);
   }
