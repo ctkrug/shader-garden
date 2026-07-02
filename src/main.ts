@@ -295,6 +295,7 @@ updateMuteButton();
 const restored = restoreCustomPreset();
 if (restored) {
   loadPreset(restored.id, { initialValues: restored.initialValues });
+  void openEditor();
 } else {
   loadPreset(activePresetId);
 }
