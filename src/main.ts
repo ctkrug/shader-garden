@@ -4,13 +4,14 @@ import { ShaderRenderer, type UniformValue } from "./gl/renderer";
 import { parseUniforms, type UniformType } from "./gl/uniforms";
 import { PRESETS, getPreset } from "./presets/registry";
 import { CustomPresetStore } from "./presets/customStore";
-import { isForkedPreset } from "./presets/fork";
+import { isForkedPreset, type ForkedPreset } from "./presets/fork";
 import { renderGallery } from "./ui/gallery";
 import { renderControls, type ControlValues } from "./ui/controls";
 import { crossfadeOut } from "./ui/crossfade";
 import { TickPlayer } from "./audio/tick";
 import { ShaderEditor } from "./editor/shaderEditor";
 import { debounce } from "./editor/debounce";
+import { loadCustomState, saveCustomState } from "./persistence/customState";
 import vertexSource from "./shaders/fullscreen.vert.glsl?raw";
 
 const app = document.getElementById("app");
@@ -131,7 +132,23 @@ function refreshEditorPanel(): void {
 
 function handleUniformChange(name: string, type: UniformType, value: number[]): void {
   uniformValues.set(name, { type, value });
+
+  const preset = getActivePreset();
+  if (preset && isForkedPreset(preset)) debouncedPersist(preset);
 }
+
+function persistCustomState(preset: ForkedPreset): void {
+  const values: Record<string, UniformValue> = {};
+  for (const [name, value] of uniformValues) values[name] = value;
+
+  saveCustomState({
+    forkedFrom: preset.forkedFrom,
+    fragmentSource: preset.fragmentSource,
+    uniformValues: values,
+  });
+}
+
+const debouncedPersist = debounce(persistCustomState, 300);
 
 function loadPreset(
   id: string,
@@ -165,6 +182,7 @@ function loadPreset(
   );
   tick.tick(880);
   refreshEditorPanel();
+  if (isForkedPreset(preset)) persistCustomState(preset);
 
   if (snapshot) crossfadeOut(stageEl, snapshot);
 }
@@ -187,6 +205,8 @@ function applyEditorSource(source: string): void {
 
   const decls = parseUniforms(source);
   renderControls(controlsEl, decls, { onChange: handleUniformChange }, uniformValues);
+
+  persistCustomState({ ...preset, fragmentSource: source });
 }
 
 const debouncedApplyEdit = debounce(applyEditorSource, 400);
@@ -211,6 +231,20 @@ function forkAndSwitch(sourceId: string): void {
   openEditor();
 }
 
+/** Recreates the most-recently-edited fork from localStorage, if any, so a reload doesn't lose in-progress work. */
+function restoreCustomPreset(): { id: string; initialValues: ControlValues } | null {
+  const persisted = loadCustomState();
+  if (!persisted) return null;
+
+  const origin = getPreset(persisted.forkedFrom);
+  if (!origin) return null;
+
+  const restored = customPresets.fork(origin);
+  customPresets.updateSource(restored.id, persisted.fragmentSource);
+
+  return { id: restored.id, initialValues: new Map(Object.entries(persisted.uniformValues)) };
+}
+
 muteButton.addEventListener("click", () => {
   tick.toggle();
   updateMuteButton();
@@ -230,7 +264,13 @@ canvas.addEventListener("pointermove", (event) => {
 });
 
 updateMuteButton();
-loadPreset(activePresetId);
+
+const restored = restoreCustomPreset();
+if (restored) {
+  loadPreset(restored.id, { initialValues: restored.initialValues });
+} else {
+  loadPreset(activePresetId);
+}
 
 const frameLoop = new FrameLoop((timeMs) => {
   resize();
