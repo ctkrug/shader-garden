@@ -73,10 +73,15 @@ a {
 .app-shell {
   height: 100%;
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  /* 4 explicit rows so mobile visual order (stage, then filmstrip, then
+     controls, per docs/DESIGN.md) doesn't depend on DOM order — without
+     this, grid auto-placement hands the flexible 1fr row to whichever
+     element is 2nd in the markup (the gallery nav), starving the canvas. */
+  grid-template-rows: auto 1fr auto auto;
 }
 
 .app-header {
+  grid-row: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -162,6 +167,7 @@ a {
 }
 
 .stage {
+  grid-row: 2;
   position: relative;
   min-height: 60vh;
   overflow: hidden;
@@ -284,6 +290,7 @@ a {
 }
 
 .gallery-rail {
+  grid-row: 3;
   display: flex;
   gap: var(--space-2);
   padding: var(--space-3);
@@ -379,6 +386,7 @@ a {
 }
 
 .control-dock {
+  grid-row: 4;
   position: relative;
   background: color-mix(in srgb, var(--surface-1) 90%, transparent);
   backdrop-filter: blur(8px);
@@ -574,6 +582,10 @@ a {
   }
 
   .control-dock {
+    /* Spans the whole grid (not just row 4) so its absolute-positioning
+       containing block is the full app-shell — bottom: 0 pins to the
+       viewport, not to the auto-sized row the base (mobile) layout gives it. */
+    grid-row: 1 / -1;
     position: absolute;
     left: var(--rail-width);
     right: 0;
